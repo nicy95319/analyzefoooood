@@ -293,6 +293,7 @@
     <div class="nav-user">
       <div class="nav-avatar" id="nav-avatar" onclick="openAvatarModal()" title="點擊更換頭像">😊</div>
       <span id="nav-username" style="font-weight:700;font-size:.9rem;color:var(--text-mid)"></span>
+      <button class="btn-logout" onclick="openChangePwdModal()">🔒 改密碼</button>
       <button class="btn-logout" onclick="doLogout()">登出</button>
     </div>
   </nav>
@@ -445,6 +446,31 @@
   </div>
 </div>
 
+<!-- Change Password Modal -->
+<div class="modal-overlay" id="changepwd-modal">
+  <div class="avatar-modal">
+    <h3>🔒 修改密碼</h3>
+    <p>請輸入舊密碼後設定新密碼</p>
+    <div class="auth-error" id="pwd-error">⚠️ <span id="pwd-error-msg"></span></div>
+    <div class="form-group" style="text-align:left;">
+      <label class="form-label">🔑 舊密碼</label>
+      <input class="form-input" type="password" id="pwd-old" placeholder="輸入目前的密碼">
+    </div>
+    <div class="form-group" style="text-align:left;">
+      <label class="form-label">🔒 新密碼</label>
+      <input class="form-input" type="password" id="pwd-new" placeholder="設定新密碼（至少8碼）">
+    </div>
+    <div class="form-group" style="text-align:left;">
+      <label class="form-label">🔒 確認新密碼</label>
+      <input class="form-input" type="password" id="pwd-confirm" placeholder="再輸入一次新密碼">
+    </div>
+    <div style="display:flex;gap:0.8rem;margin-top:0.5rem;">
+      <button class="btn-primary" onclick="doChangePwd()" style="flex:1;">確認修改 ✨</button>
+      <button class="btn-cancel" onclick="closeChangePwdModal()">取消</button>
+    </div>
+  </div>
+</div>
+
 <!-- Avatar Modal -->
 <div class="modal-overlay" id="avatar-modal">
   <div class="avatar-modal">
@@ -481,6 +507,41 @@
 </div>
 
 <script>
+// ── Change Password ──
+function openChangePwdModal(){
+  document.getElementById('pwd-old').value='';
+  document.getElementById('pwd-new').value='';
+  document.getElementById('pwd-confirm').value='';
+  document.getElementById('pwd-error').classList.remove('show');
+  document.getElementById('changepwd-modal').classList.add('show');
+}
+function closeChangePwdModal(){
+  document.getElementById('changepwd-modal').classList.remove('show');
+}
+function showPwdError(msg){
+  document.getElementById('pwd-error-msg').textContent=msg;
+  document.getElementById('pwd-error').classList.add('show');
+}
+function doChangePwd(){
+  const oldPwd=document.getElementById('pwd-old').value;
+  const newPwd=document.getElementById('pwd-new').value;
+  const confirm=document.getElementById('pwd-confirm').value;
+  document.getElementById('pwd-error').classList.remove('show');
+  if(!oldPwd){showPwdError('請輸入舊密碼');return}
+  if(!newPwd){showPwdError('請輸入新密碼');return}
+  if(newPwd.length<8){showPwdError('新密碼至少需要 8 個字元');return}
+  if(newPwd!==confirm){showPwdError('兩次輸入的新密碼不一致');return}
+  const users=getUsers();
+  if(users[currentEmail].password!==oldPwd){showPwdError('舊密碼錯誤，請再試一次 🔒');return}
+  if(oldPwd===newPwd){showPwdError('新密碼不能與舊密碼相同');return}
+  users[currentEmail].password=newPwd;
+  saveUsers(users);
+  closeChangePwdModal();
+  // 顯示成功提示
+  const el=document.getElementById('login-error');
+  alert('✅ 密碼修改成功！');
+}
+
 // ── Avatar ──
 let pendingAvatar = null; // 暫存尚未儲存的頭像
 
