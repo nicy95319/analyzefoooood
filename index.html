@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍓 成分小偵探 — 食品配料分析</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #FF8FAB; --pink-light: #FFD6E0; --pink-pale: #FFF0F5;
+    --peach: #FFB347; --peach-light: #FFE5C4;
+    --mint: #A8E6CF; --mint-dark: #5CB891;
+    --lavender: #C9B8FF; --lavender-dark: #8A70FF;
+    --cream: #FFFBF5;
+    --text-dark: #3D2C2C; --text-mid: #7A6060; --text-light: #B59898;
+    --white: #FFFFFF; --danger: #FF6B6B; --warning: #FFD166; --safe: #06D6A0;
+    --radius-md: 18px; --radius-lg: 28px; --radius-xl: 40px;
+    --shadow: 0 8px 32px rgba(255,143,171,0.18);
+    --shadow-sm: 0 4px 16px rgba(255,143,171,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: var(--cream); color: var(--text-dark); min-height: 100vh; overflow-x: hidden; }
+
+  .bg-blobs { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .blob { position: absolute; border-radius: 50%; animation: float 8s ease-in-out infinite; opacity: 0.18; }
+  .blob-1 { width:320px;height:320px;background:var(--pink);top:-80px;right:-60px;animation-delay:0s; }
+  .blob-2 { width:200px;height:200px;background:var(--peach);bottom:120px;left:-60px;animation-delay:-3s; }
+  .blob-3 { width:160px;height:160px;background:var(--lavender);top:45%;left:10%;animation-delay:-5s; }
+  .blob-4 { width:100px;height:100px;background:var(--mint);bottom:60px;right:15%;animation-delay:-2s; }
+  @keyframes float { 0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-24px) scale(1.04)} }
+
+  .page { display: none; min-height: 100vh; position: relative; z-index: 1; }
+  .page.active { display: flex; }
+  @keyframes popIn { from{opacity:0;transform:scale(0.85) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)} }
+  @keyframes wiggle { 0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)} }
+
+  /* ── LOGIN ── */
+  #page-login { align-items:center; justify-content:center; padding:2rem; }
+  .login-card {
+    background:var(--white); border-radius:var(--radius-xl);
+    padding:3rem 2.5rem 2.5rem; max-width:440px; width:100%;
+    box-shadow:var(--shadow); text-align:center;
+    animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .login-mascot { width:90px;height:90px;margin:0 auto 1.2rem;background:var(--pink-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:3rem;animation:wiggle 2.5s ease-in-out infinite; }
+  .login-title { font-size:2rem;font-weight:900;color:var(--text-dark);line-height:1.2;margin-bottom:0.3rem; }
+  .login-subtitle { font-size:0.95rem;color:var(--text-light);margin-bottom:2rem; }
+  .tabs { display:flex;background:var(--pink-pale);border-radius:var(--radius-md);padding:4px;margin-bottom:1.8rem; }
+  .tab-btn { flex:1;padding:0.55rem;border:none;background:transparent;border-radius:calc(var(--radius-md) - 4px);font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:700;color:var(--text-mid);cursor:pointer;transition:all 0.25s; }
+  .tab-btn.active { background:var(--white);color:var(--pink);box-shadow:0 2px 8px rgba(255,143,171,0.2); }
+  .form-group { margin-bottom:1.2rem;text-align:left; }
+  .form-label { display:block;font-size:0.85rem;font-weight:700;color:var(--text-mid);margin-bottom:0.4rem; }
+  .form-input { width:100%;padding:0.8rem 1.1rem;border:2px solid var(--pink-light);border-radius:var(--radius-md);font-family:'Nunito',sans-serif;font-size:0.95rem;color:var(--text-dark);background:var(--pink-pale);outline:none;transition:all 0.2s; }
+  .form-input:focus { border-color:var(--pink);background:var(--white);box-shadow:0 0 0 4px rgba(255,143,171,0.15); }
+  .btn-primary { width:100%;padding:0.9rem;background:linear-gradient(135deg,var(--pink) 0%,#FF6FA8 100%);border:none;border-radius:var(--radius-md);font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800;color:var(--white);cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;box-shadow:0 4px 16px rgba(255,143,171,0.4); }
+  .btn-primary:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,143,171,0.5); }
+  .login-footer { margin-top:1.5rem;font-size:0.82rem;color:var(--text-light); }
+  .login-footer a { color:var(--pink);text-decoration:none;font-weight:700; }
+  .dots { display:flex;justify-content:center;gap:6px;margin-top:1.6rem; }
+  .dot { width:8px;height:8px;border-radius:50%;background:var(--pink-light); }
+  .dot.active { background:var(--pink);width:22px;border-radius:4px; }
+  .auth-error { background:#FFF0F0;border:2px solid #FFD0D0;border-radius:var(--radius-md);padding:0.7rem 1rem;font-size:0.85rem;font-weight:700;color:#CC2222;margin-bottom:1rem;display:none;animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);text-align:left; }
+  .auth-error.show { display:flex;align-items:center;gap:8px; }
+
+  /* ── APP ── */
+  #page-app { flex-direction:column; }
+  .nav { background:var(--white);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 16px rgba(255,143,171,0.1);position:sticky;top:0;z-index:100; }
+  .nav-logo { font-size:1.3rem;font-weight:900;color:var(--pink);display:flex;align-items:center;gap:8px; }
+  .nav-user { display:flex;align-items:center;gap:0.8rem; }
+  .nav-avatar { width:36px;height:36px;border-radius:50%;background:var(--pink-light);display:flex;align-items:center;justify-content:center;font-size:1.1rem; }
+  .btn-logout { padding:0.45rem 1.1rem;border:2px solid var(--pink-light);border-radius:var(--radius-md);background:transparent;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:700;color:var(--text-mid);transition:all 0.2s; }
+  .btn-logout:hover { border-color:var(--pink);color:var(--pink); }
+  .app-content { flex:1;max-width:900px;width:100%;margin:0 auto;padding:2rem 1.5rem; }
+  .welcome-banner { background:linear-gradient(135deg,var(--pink) 0%,#FFB3CC 60%,var(--peach) 100%);border-radius:var(--radius-lg);padding:2rem 2.5rem;color:var(--white);margin-bottom:2rem;position:relative;overflow:hidden;animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.1s both; }
+  .welcome-banner h2 { font-size:1.5rem;font-weight:900;margin-bottom:0.3rem; }
+  .welcome-banner p { font-size:0.95rem;opacity:0.9; }
+  .banner-emoji { position:absolute;right:2rem;top:50%;transform:translateY(-50%);font-size:4.5rem;opacity:0.35; }
+  .section-title { font-size:1.1rem;font-weight:800;color:var(--text-dark);margin-bottom:1rem;display:flex;align-items:center;gap:8px; }
+
+  /* API key banner */
+  .apikey-banner { background:#FFFBF0;border:2px solid var(--peach-light);border-radius:var(--radius-md);padding:1.1rem 1.4rem;margin-bottom:1.5rem;display:flex;gap:0.9rem;align-items:flex-start; }
+  .apikey-banner-icon { font-size:1.4rem;flex-shrink:0;margin-top:2px; }
+  .apikey-banner-body { flex:1; }
+  .apikey-banner-body h4 { font-size:0.9rem;font-weight:800;color:#996600;margin-bottom:0.3rem; }
+  .apikey-banner-body p { font-size:0.82rem;color:var(--text-mid);margin-bottom:0.7rem;line-height:1.5; }
+  .apikey-input-row { display:flex;gap:0.6rem; }
+  .apikey-input-row input { flex:1;padding:0.55rem 0.9rem;border:2px solid var(--peach-light);border-radius:var(--radius-md);font-family:'Nunito',sans-serif;font-size:0.85rem;background:var(--white);outline:none;transition:all 0.2s; }
+  .apikey-input-row input:focus { border-color:var(--peach);box-shadow:0 0 0 3px rgba(255,179,71,0.15); }
+  .btn-save-key { padding:0.55rem 1.1rem;background:var(--peach);border:none;border-radius:var(--radius-md);font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;color:white;cursor:pointer;transition:all 0.2s;white-space:nowrap; }
+  .btn-save-key:hover { background:#e8a030; }
+  .apikey-set-row { display:none;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:700;color:var(--mint-dark); }
+  .apikey-set-row.show { display:flex; }
+  .btn-change-key { padding:0.3rem 0.8rem;border:2px solid var(--mint-dark);border-radius:var(--radius-md);background:transparent;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;color:var(--mint-dark);transition:all 0.2s; }
+  .btn-change-key:hover { background:var(--mint);color:#1A5C40; }
+
+  /* grade intro */
+  .grade-intro { display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:2rem; }
+  .grade-card {
+    background:var(--white);border-radius:var(--radius-md);
+    padding:1rem 0.8rem;text-align:center;
+    box-shadow:var(--shadow-sm);transition:transform 0.2s;
+  }
+  .grade-card:hover { transform:translateY(-3px); }
+  .grade-badge {
+    width:44px;height:44px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.3rem;font-weight:900;margin:0 auto 0.6rem;
+  }
+  .grade-card h4 { font-size:0.85rem;font-weight:900;margin-bottom:0.3rem; }
+  .grade-card p { font-size:0.75rem;color:var(--text-mid);line-height:1.5; }
+  @media(max-width:600px){ .grade-intro{grid-template-columns:repeat(2,1fr);} }
+  .history-list { display:flex;flex-direction:column;gap:0.75rem;margin-bottom:2rem; }
+  .history-card { background:var(--white);border:2px solid var(--pink-light);border-radius:var(--radius-md);padding:0.85rem 1.2rem;display:flex;align-items:center;gap:1rem;transition:all 0.2s; }
+  .history-card:hover { border-color:var(--pink);transform:translateX(3px); }
+  .history-score-badge { width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:900;flex-shrink:0; }
+  .history-info { flex:1;min-width:0; }
+  .history-name { font-size:0.92rem;font-weight:800;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0.15rem; }
+  .history-time { font-size:0.78rem;color:var(--text-light);font-weight:600; }
+  .history-empty { background:var(--white);border:2px dashed var(--pink-light);border-radius:var(--radius-md);padding:1.8rem;text-align:center;color:var(--text-light);font-size:0.9rem;font-weight:700;margin-bottom:2rem; }
+  .history-empty .empty-icon { font-size:2.2rem;margin-bottom:0.5rem;display:block; }
+
+  /* upload */
+  .upload-btns { display:flex;gap:1rem;margin-bottom:1.5rem; }
+  .btn-upload-type { flex:1;padding:0.9rem;border:2px solid var(--pink-light);border-radius:var(--radius-md);background:var(--white);cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:700;color:var(--text-mid);transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px; }
+  .btn-upload-type:hover { border-color:var(--pink);background:var(--pink-pale);color:var(--pink); }
+  .upload-area { background:var(--white);border:3px dashed var(--pink-light);border-radius:var(--radius-lg);padding:2.5rem;text-align:center;cursor:pointer;transition:all 0.25s;margin-bottom:1.5rem; }
+  .upload-area:hover,.upload-area.dragover { border-color:var(--pink);background:var(--pink-pale);transform:scale(1.01); }
+  .upload-icon { font-size:3.5rem;margin-bottom:1rem; }
+  .upload-text { font-size:1rem;font-weight:700;color:var(--text-mid);margin-bottom:0.4rem; }
+  .upload-sub { font-size:0.85rem;color:var(--text-light); }
+  .preview-wrap { position:relative;border-radius:var(--radius-lg);overflow:hidden;margin-bottom:1.5rem;display:none;box-shadow:var(--shadow); }
+  .preview-wrap.show { display:block;animation:popIn 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+  .preview-wrap img { width:100%;max-height:280px;object-fit:contain;background:var(--pink-pale); }
+  .preview-remove { position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.9);border:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.12);transition:all 0.2s; }
+  .preview-remove:hover { background:var(--danger);color:white; }
+  .btn-analyze { width:100%;padding:1rem;background:linear-gradient(135deg,var(--lavender-dark) 0%,var(--pink) 100%);border:none;border-radius:var(--radius-md);font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:800;color:var(--white);cursor:pointer;transition:all 0.2s;margin-bottom:2rem;box-shadow:0 4px 20px rgba(138,112,255,0.3);display:flex;align-items:center;justify-content:center;gap:10px; }
+  .btn-analyze:hover { transform:translateY(-2px);box-shadow:0 8px 28px rgba(138,112,255,0.4); }
+  .btn-analyze:disabled { opacity:0.5;cursor:not-allowed;transform:none; }
+
+  /* loading */
+  .loading-card { background:var(--white);border-radius:var(--radius-lg);padding:2.5rem;text-align:center;box-shadow:var(--shadow);margin-bottom:2rem;display:none; }
+  .loading-card.show { display:block;animation:popIn 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+  .loading-emojis { font-size:2.5rem;margin-bottom:1rem;letter-spacing:8px; }
+  .loading-text { font-weight:700;color:var(--text-mid); }
+  .progress-bar { height:8px;background:var(--pink-pale);border-radius:4px;overflow:hidden;margin-top:1.2rem; }
+  .progress-fill { height:100%;background:linear-gradient(90deg,var(--pink) 0%,var(--lavender-dark) 100%);border-radius:4px;animation:progressAnim 3s ease-in-out forwards; }
+  @keyframes progressAnim { 0%{width:0%}60%{width:75%}100%{width:95%} }
+
+  /* error */
+  .error-card { background:#FFF5F5;border:2px solid #FFD0D0;border-radius:var(--radius-lg);padding:2rem 2.5rem;text-align:center;margin-bottom:1.5rem;display:none; }
+  .error-card.show { display:block;animation:popIn 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+  .error-icon { font-size:3rem;margin-bottom:0.8rem; }
+  .error-title { font-size:1.1rem;font-weight:900;color:#CC2222;margin-bottom:0.4rem; }
+  .error-msg { font-size:0.9rem;color:var(--text-mid);line-height:1.6;margin-bottom:1.2rem; }
+  .error-tips { background:#FFF0F0;border-radius:var(--radius-md);padding:0.9rem 1.2rem;text-align:left;margin-bottom:1.2rem; }
+  .error-tips p { font-size:0.83rem;color:#AA3333;font-weight:700;margin-bottom:0.5rem; }
+  .error-tips ul { list-style:none;padding:0; }
+  .error-tips ul li { font-size:0.83rem;color:var(--text-mid);padding:3px 0;line-height:1.5; }
+  .error-tips ul li::before { content:'👉 '; }
+  .btn-retry { padding:0.75rem 2rem;background:var(--danger);border:none;border-radius:var(--radius-md);font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:800;color:white;cursor:pointer;transition:all 0.2s; }
+  .btn-retry:hover { background:#e05555;transform:translateY(-1px); }
+
+  /* results */
+  .result-section { display:none; }
+  .result-section.show { display:block;animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  .result-header { background:var(--white);border-radius:var(--radius-lg);padding:1.5rem 2rem;margin-bottom:1.2rem;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:1.2rem; }
+  .result-score { width:72px;height:72px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;flex-shrink:0; }
+  .score-A{background:#D4F4E2;color:#1A8C4E} .score-B{background:#DCFAEC;color:#2BA65E} .score-C{background:#FFF4CC;color:#CC8800} .score-D{background:#FFE5E5;color:#CC2222}
+  .score-num { font-size:1.6rem;line-height:1; } .score-lbl { font-size:0.7rem;font-weight:700; }
+  .result-summary h3 { font-size:1.2rem;font-weight:900;margin-bottom:0.25rem; }
+  .result-summary p { font-size:0.9rem;color:var(--text-mid); }
+  .ingredients-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-bottom:1.5rem; }
+  .ingredient-card { background:var(--white);border-radius:var(--radius-md);padding:1.1rem 1.3rem;box-shadow:var(--shadow-sm);display:flex;align-items:flex-start;gap:0.9rem;transition:transform 0.2s; }
+  .ingredient-card:hover { transform:translateY(-2px); }
+  .ing-dot { width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:4px; }
+  .dot-safe{background:var(--safe)} .dot-caution{background:var(--warning)} .dot-danger{background:var(--danger)}
+  .ing-name { font-size:0.95rem;font-weight:700;margin-bottom:0.2rem; }
+  .ing-type { font-size:0.75rem;font-weight:700;padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:0.4rem; }
+  .type-safe{background:#D4F4E2;color:#1A8C4E} .type-caution{background:#FFF4CC;color:#996600} .type-danger{background:#FFE5E5;color:#CC2222}
+  .ing-desc { font-size:0.82rem;color:var(--text-mid);line-height:1.5; }
+  .warnings-box { background:#FFF8F0;border:2px solid var(--peach-light);border-radius:var(--radius-md);padding:1.2rem 1.5rem;margin-bottom:1.5rem; }
+  .warnings-box h4 { font-size:0.95rem;font-weight:800;color:var(--peach);margin-bottom:0.8rem; }
+  .warning-item { font-size:0.87rem;color:var(--text-mid);margin-bottom:0.5rem;line-height:1.5;padding-left:1.4rem;position:relative; }
+  .warning-item::before { content:'⚠️';position:absolute;left:0; }
+  .tip-box { background:var(--mint);border-radius:var(--radius-md);padding:1.2rem 1.5rem;margin-bottom:2rem;display:flex;gap:1rem;align-items:flex-start; }
+  .tip-box .tip-icon { font-size:1.5rem;flex-shrink:0; }
+  .tip-box h4 { font-size:0.9rem;font-weight:800;color:#1A5C40;margin-bottom:0.3rem; }
+  .tip-box p { font-size:0.85rem;color:#2A7A56;line-height:1.5; }
+
+  /* file protocol warning */
+  .file-warning { background:#FFF3CD;border:2px solid #FFE082;border-radius:var(--radius-md);padding:0.9rem 1.2rem;margin-bottom:1.2rem;font-size:0.85rem;font-weight:700;color:#7A5800;display:none;line-height:1.6; }
+  .file-warning.show { display:block; }
+  .file-warning code { background:#FFE082;padding:1px 6px;border-radius:6px;font-family:monospace;font-size:0.82rem; }
+  .modal-overlay { position:fixed;inset:0;background:rgba(61,44,44,0.55);z-index:200;display:none;align-items:center;justify-content:center; }
+  .modal-overlay.show { display:flex; }
+  .camera-modal { background:var(--white);border-radius:var(--radius-xl);padding:2rem;width:90%;max-width:480px;text-align:center;box-shadow:0 16px 60px rgba(0,0,0,0.2);animation:popIn 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+  .camera-modal h3 { font-size:1.2rem;font-weight:900;margin-bottom:0.5rem; }
+  .camera-modal p { font-size:0.9rem;color:var(--text-mid);margin-bottom:1.5rem; }
+  #camera-video { width:100%;border-radius:var(--radius-md);background:#000;max-height:260px;object-fit:cover;margin-bottom:1rem; }
+  .camera-controls { display:flex;gap:1rem; }
+  .btn-capture { flex:1;padding:0.85rem;background:var(--pink);border:none;border-radius:var(--radius-md);font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:800;color:var(--white);cursor:pointer;transition:all 0.2s; }
+  .btn-capture:hover { background:#FF6FA8; }
+  .btn-cancel { padding:0.85rem 1.5rem;border:2px solid var(--pink-light);border-radius:var(--radius-md);background:transparent;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:700;color:var(--text-mid);transition:all 0.2s; }
+  .btn-cancel:hover { border-color:var(--pink);color:var(--pink); }
+  #canvas-hidden { display:none; }
+  #file-input { display:none; }
+  /* avatar */
+  .nav-avatar {
+    width:36px;height:36px;border-radius:50%;background:var(--pink-light);
+    display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+    cursor:pointer;overflow:hidden;transition:all 0.2s;
+    border:2px solid transparent;position:relative;flex-shrink:0;
+  }
+  .nav-avatar:hover { border-color:var(--pink);transform:scale(1.08); }
+  .nav-avatar:hover::after { content:'✎';position:absolute;inset:0;background:rgba(255,143,171,0.7);display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:white;border-radius:50%; }
+  .nav-avatar img { width:100%;height:100%;object-fit:cover;border-radius:50%; }
+  .avatar-modal { background:var(--white);border-radius:var(--radius-xl);padding:2rem;width:90%;max-width:360px;text-align:center;box-shadow:0 16px 60px rgba(0,0,0,0.2);animation:popIn 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+  .avatar-modal h3 { font-size:1.1rem;font-weight:900;margin-bottom:0.4rem; }
+  .avatar-modal p { font-size:0.85rem;color:var(--text-mid);margin-bottom:1.4rem; }
+  .avatar-preview { width:90px;height:90px;border-radius:50%;background:var(--pink-pale);margin:0 auto 1.2rem;display:flex;align-items:center;justify-content:center;font-size:2.8rem;overflow:hidden;border:3px solid var(--pink-light); }
+  .avatar-preview img { width:100%;height:100%;object-fit:cover; }
+  .avatar-options { display:flex;gap:0.8rem;margin-bottom:1rem; }
+  .btn-avatar-opt { flex:1;padding:0.75rem;border:2px solid var(--pink-light);border-radius:var(--radius-md);background:var(--white);cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:700;color:var(--text-mid);transition:all 0.2s; }
+  .btn-avatar-opt:hover { border-color:var(--pink);background:var(--pink-pale);color:var(--pink); }
+  .emoji-grid { display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;margin-bottom:1.2rem; }
+  .emoji-opt { padding:0.5rem;font-size:1.4rem;border-radius:var(--radius-md);cursor:pointer;transition:all 0.2s;border:2px solid transparent;background:var(--pink-pale);text-align:center; }
+  .emoji-opt:hover,.emoji-opt.selected { border-color:var(--pink);background:var(--pink-light); }
+  #avatar-file-input { display:none; }
+
+  .paw-deco { position:fixed;bottom:20px;right:20px;font-size:1.5rem;opacity:0.25;pointer-events:none;animation:float 4s ease-in-out infinite; }
+
+  @media(max-width:600px){
+    .welcome-banner{padding:1.5rem} .banner-emoji{font-size:3rem;right:1rem}
+    .ingredients-grid{grid-template-columns:1fr} .upload-btns{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-blobs">
+  <div class="blob blob-1"></div><div class="blob blob-2"></div>
+  <div class="blob blob-3"></div><div class="blob blob-4"></div>
+</div>
+<div class="paw-deco">🐾</div>
+
+<!-- ══ LOGIN ══ -->
+<div id="page-login" class="page active">
+  <div class="login-card">
+    <div class="login-mascot">🔍</div>
+    <h1 class="login-title">成分小偵探</h1>
+    <p class="login-subtitle">掃描食品配料表，守護你的健康 🍓</p>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">登入</button>
+      <button class="tab-btn" onclick="switchTab('register')">註冊</button>
+    </div>
+    <div id="form-login">
+      <div class="auth-error" id="login-error">⚠️ <span id="login-error-msg"></span></div>
+      <div class="form-group">
+        <label class="form-label">📧 電子郵件</label>
+        <input class="form-input" type="email" placeholder="hello@example.com" id="login-email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">🔒 密碼</label>
+        <input class="form-input" type="password" placeholder="輸入你的密碼" id="login-pwd">
+      </div>
+      <button class="btn-primary" onclick="doLogin()">登入 ✨</button>
+    </div>
+    <div id="form-register" style="display:none;">
+      <div class="auth-error" id="reg-error">⚠️ <span id="reg-error-msg"></span></div>
+      <div class="form-group">
+        <label class="form-label">🌸 暱稱</label>
+        <input class="form-input" type="text" placeholder="你想叫什麼名字呢？" id="reg-name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">📧 電子郵件</label>
+        <input class="form-input" type="email" placeholder="hello@example.com" id="reg-email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">🔒 密碼</label>
+        <input class="form-input" type="password" placeholder="設定密碼（至少8碼）" id="reg-pwd">
+      </div>
+      <button class="btn-primary" onclick="doRegister()">建立帳號 🎉</button>
+    </div>
+    <p class="login-footer">登入即代表你同意我們的 <a href="#">服務條款</a> 及 <a href="#">隱私政策</a></p>
+    <div class="dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="page-app" class="page">
+  <nav class="nav">
+    <div class="nav-logo"><span>🔍</span> 成分小偵探</div>
+    <div class="nav-user">
+      <div class="nav-avatar" id="nav-avatar" onclick="openAvatarModal()" title="點擊更換頭像">😊</div>
+      <span id="nav-username" style="font-weight:700;font-size:.9rem;color:var(--text-mid)"></span>
+      <button class="btn-logout" onclick="doLogout()">登出</button>
+    </div>
+  </nav>
+  <div class="app-content">
+
+    <div class="welcome-banner">
+      <h2 id="welcome-msg">嗨嗨！準備好偵查今天的食物了嗎？ 🕵️</h2>
+      <p>上傳食品配料表照片，讓我幫你分析每一個成分～</p>
+      <div class="banner-emoji">🍭</div>
+    </div>
+
+    <!-- file:// warning -->
+    <div class="file-warning" id="file-warning">
+      ⚠️ 偵測到你用 <code>file://</code> 開啟，瀏覽器可能會擋住 API 請求。建議用以下方式解決：<br>
+      ① 用 <strong>VS Code</strong> 安裝 <strong>Live Server</strong> 擴充功能後開啟此檔案<br>
+      ② 或用 Chrome 執行：<code>chrome.exe --disable-web-security --user-data-dir="%TEMP%\chrome_dev"</code>
+    </div>
+
+    <!-- Gemini API Key -->
+    <div class="apikey-banner" id="apikey-banner">
+      <div class="apikey-banner-icon">🔑</div>
+      <div class="apikey-banner-body">
+        <h4>設定 Gemini API Key</h4>
+        <p>請輸入你的 Gemini API Key 才能使用 AI 分析功能。金鑰只會存在你的瀏覽器本機，不會上傳到任何伺服器。<br>
+        沒有 Key？<a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--peach);font-weight:800;">點此免費申請</a></p>
+        <div class="apikey-input-row">
+          <input type="password" id="apikey-input" placeholder="貼上你的 Gemini API Key...">
+          <button class="btn-save-key" onclick="saveApiKey()">儲存 ✓</button>
+        </div>
+      </div>
+    </div>
+    <div class="apikey-set-row" id="apikey-set-row">
+      <span>✅ Gemini API Key 已設定</span>
+      <button class="btn-change-key" onclick="changeApiKey()">更換 Key</button>
+    </div>
+
+    <!-- history -->
+    <div class="section-title">⏰ 最近分析記錄</div>
+    <div id="history-container"></div>
+
+    <!-- grade intro -->
+    <div class="section-title">🏅 評分等級說明</div>
+    <div class="grade-intro">
+      <div class="grade-card">
+        <div class="grade-badge" style="background:#D4F4E2;color:#1A8C4E;">A</div>
+        <h4 style="color:#1A8C4E;">優良</h4>
+        <p>幾乎全天然成分，無有疑慮添加物，可安心食用 🌿</p>
+      </div>
+      <div class="grade-card">
+        <div class="grade-badge" style="background:#DCFAEC;color:#2BA65E;">B</div>
+        <h4 style="color:#2BA65E;">良好</h4>
+        <p>大部分天然，含少數一般添加物，正常食用沒問題 👍</p>
+      </div>
+      <div class="grade-card">
+        <div class="grade-badge" style="background:#FFF4CC;color:#CC8800;">C</div>
+        <h4 style="color:#CC8800;">普通</h4>
+        <p>含多種添加物或高糖高鈉高脂，建議適量食用 ⚠️</p>
+      </div>
+      <div class="grade-card">
+        <div class="grade-badge" style="background:#FFE5E5;color:#CC2222;">D</div>
+        <h4 style="color:#CC2222;">注意</h4>
+        <p>含多種有健康疑慮的成分，建議少吃或避免 🚫</p>
+      </div>
+    </div>
+
+    <!-- upload -->
+    <div class="section-title">📷 上傳配料表</div>
+    <div class="upload-btns">
+      <button class="btn-upload-type" onclick="triggerUpload()">📁 選擇照片</button>
+      <button class="btn-upload-type" onclick="openCamera()">📷 相機掃描</button>
+    </div>
+    <div class="upload-area" id="upload-area"
+         onclick="triggerUpload()"
+         ondragover="handleDragOver(event)"
+         ondrop="handleDrop(event)"
+         ondragleave="this.classList.remove('dragover')">
+      <div class="upload-icon">📸</div>
+      <div class="upload-text">點擊上傳或拖拉照片到這裡</div>
+      <div class="upload-sub">支援 JPG、PNG、HEIC — 最大 10MB</div>
+    </div>
+    <input type="file" id="file-input" accept="image/*" onchange="handleFileInput(event)">
+    <div class="preview-wrap" id="preview-wrap">
+      <img id="preview-img" src="" alt="預覽">
+      <button class="preview-remove" onclick="removeImage()">✕</button>
+    </div>
+    <button class="btn-analyze" id="btn-analyze" onclick="startAnalysis()" disabled>🔬 開始分析配料表</button>
+
+    <!-- loading -->
+    <div class="loading-card" id="loading-card">
+      <div class="loading-emojis">🔍🧪🍀</div>
+      <div class="loading-text" id="loading-text">小偵探正在努力分析中⋯</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div id="debug-status" style="display:none;"></div>
+    </div>
+
+    <!-- error -->
+    <div class="error-card" id="error-card">
+      <div class="error-icon" id="error-icon">😿</div>
+      <div class="error-title" id="error-title"></div>
+      <div class="error-msg" id="error-msg"></div>
+      <div class="error-tips">
+        <p>💡 建議：</p>
+        <ul id="error-tips-list"></ul>
+      </div>
+      <button class="btn-retry" onclick="retryAnalysis()">🔄 重新試試</button>
+    </div>
+
+    <!-- results -->
+    <div class="result-section" id="result-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+        <div class="section-title" style="margin-bottom:0;">✅ 分析結果</div>
+        <button class="btn-logout" onclick="resetAnalysis()" style="border-color:var(--pink);color:var(--pink);">🔄 重新分析</button>
+      </div>
+      <div class="result-header">
+        <div class="result-score score-C" id="result-score">
+          <div class="score-num" id="score-letter">C</div>
+          <div class="score-lbl">評分</div>
+        </div>
+        <div class="result-summary">
+          <h3 id="product-name"></h3>
+          <p id="product-summary"></p>
+        </div>
+      </div>
+      <div class="section-title">🧂 成分明細</div>
+      <div class="ingredients-grid" id="ingredients-grid"></div>
+      <div class="warnings-box" id="warnings-box">
+        <h4>⚠️ 注意事項</h4>
+        <div id="warnings-list"></div>
+      </div>
+      <div class="tip-box">
+        <div class="tip-icon">💡</div>
+        <div><h4>小偵探的建議</h4><p id="tip-text"></p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Camera -->
+<div class="modal-overlay" id="camera-modal">
+  <div class="camera-modal">
+    <h3>📷 相機掃描</h3>
+    <p>將配料表對準相機，然後按下拍攝</p>
+    <video id="camera-video" autoplay playsinline></video>
+    <canvas id="canvas-hidden" width="640" height="480"></canvas>
+    <div class="camera-controls">
+      <button class="btn-capture" onclick="capturePhoto()">📸 拍攝</button>
+      <button class="btn-cancel" onclick="closeCamera()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Avatar Modal -->
+<div class="modal-overlay" id="avatar-modal">
+  <div class="avatar-modal">
+    <h3>🖼 更換頭像</h3>
+    <p>選擇表情符號或上傳自己的照片</p>
+    <div class="avatar-preview" id="avatar-preview">😊</div>
+    <div class="avatar-options">
+      <button class="btn-avatar-opt" onclick="document.getElementById('avatar-file-input').click()">📁 上傳照片</button>
+      <button class="btn-avatar-opt" onclick="showEmojiPicker()">😊 選表情</button>
+    </div>
+    <input type="file" id="avatar-file-input" accept="image/*" onchange="handleAvatarUpload(event)">
+    <div class="emoji-grid" id="emoji-grid" style="display:none;">
+      <div class="emoji-opt" onclick="selectEmoji('😊')">😊</div>
+      <div class="emoji-opt" onclick="selectEmoji('🐱')">🐱</div>
+      <div class="emoji-opt" onclick="selectEmoji('🐶')">🐶</div>
+      <div class="emoji-opt" onclick="selectEmoji('🐰')">🐰</div>
+      <div class="emoji-opt" onclick="selectEmoji('🐻')">🐻</div>
+      <div class="emoji-opt" onclick="selectEmoji('🦊')">🦊</div>
+      <div class="emoji-opt" onclick="selectEmoji('🐸')">🐸</div>
+      <div class="emoji-opt" onclick="selectEmoji('🐼')">🐼</div>
+      <div class="emoji-opt" onclick="selectEmoji('🦄')">🦄</div>
+      <div class="emoji-opt" onclick="selectEmoji('🐨')">🐨</div>
+      <div class="emoji-opt" onclick="selectEmoji('🍓')">🍓</div>
+      <div class="emoji-opt" onclick="selectEmoji('🌸')">🌸</div>
+      <div class="emoji-opt" onclick="selectEmoji('⭐')">⭐</div>
+      <div class="emoji-opt" onclick="selectEmoji('🌈')">🌈</div>
+      <div class="emoji-opt" onclick="selectEmoji('🎀')">🎀</div>
+    </div>
+    <div style="display:flex;gap:0.8rem;margin-top:0.5rem;">
+      <button class="btn-primary" onclick="saveAvatar()" style="flex:1;">儲存頭像 ✨</button>
+      <button class="btn-cancel" onclick="closeAvatarModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Avatar ──
+let pendingAvatar = null; // 暫存尚未儲存的頭像
+
+function avatarKey() { return `si_avatar_${currentEmail}`; }
+function getAvatar() { return localStorage.getItem(avatarKey()) || '😊'; }
+function renderAvatar() {
+  const val = getAvatar();
+  const el = document.getElementById('nav-avatar');
+  if(val.startsWith('data:')) {
+    el.innerHTML = `<img src="${val}" alt="頭像">`;
+  } else {
+    el.innerHTML = val;
+  }
+}
+
+function openAvatarModal() {
+  pendingAvatar = null;
+  document.getElementById('emoji-grid').style.display = 'none';
+  // 顯示目前頭像在預覽
+  const cur = getAvatar();
+  const prev = document.getElementById('avatar-preview');
+  if(cur.startsWith('data:')) {
+    prev.innerHTML = `<img src="${cur}" alt="頭像">`;
+  } else {
+    prev.innerHTML = cur;
+  }
+  document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
+  document.getElementById('avatar-modal').classList.add('show');
+}
+function closeAvatarModal() {
+  document.getElementById('avatar-modal').classList.remove('show');
+  pendingAvatar = null;
+}
+function showEmojiPicker() {
+  const grid = document.getElementById('emoji-grid');
+  grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
+}
+function selectEmoji(emoji) {
+  pendingAvatar = emoji;
+  document.getElementById('avatar-preview').innerHTML = emoji;
+  document.querySelectorAll('.emoji-opt').forEach(e => {
+    e.classList.toggle('selected', e.textContent === emoji);
+  });
+}
+function handleAvatarUpload(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    pendingAvatar = ev.target.result;
+    const prev = document.getElementById('avatar-preview');
+    prev.innerHTML = `<img src="${pendingAvatar}" alt="頭像">`;
+    document.getElementById('emoji-grid').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+function saveAvatar() {
+  if(!pendingAvatar) { closeAvatarModal(); return; }
+  localStorage.setItem(avatarKey(), pendingAvatar);
+  renderAvatar();
+  closeAvatarModal();
+}
+
+// ── Tab ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',tab==='login'?i===0:i===1));
+  document.getElementById('form-login').style.display    = tab==='login'    ?'':'none';
+  document.getElementById('form-register').style.display = tab==='register' ?'':'none';
+}
+
+// ── Auth ──
+function getUsers(){ try{return JSON.parse(localStorage.getItem('si_users')||'{}')}catch{return{}} }
+function saveUsers(u){ localStorage.setItem('si_users',JSON.stringify(u)) }
+
+function showLoginError(msg){
+  const el=document.getElementById('login-error');
+  el.style.background=''; el.style.borderColor=''; el.style.color='';
+  document.getElementById('login-error-msg').textContent=msg;
+  el.classList.add('show');
+}
+function showRegError(msg){
+  document.getElementById('reg-error-msg').textContent=msg;
+  document.getElementById('reg-error').classList.add('show');
+}
+function clearErrors(){
+  document.getElementById('login-error').classList.remove('show');
+  document.getElementById('reg-error').classList.remove('show');
+}
+
+function doLogin(){
+  const email=document.getElementById('login-email').value.trim().toLowerCase();
+  const pwd=document.getElementById('login-pwd').value;
+  clearErrors();
+  if(!email){showLoginError('請輸入電子郵件');return}
+  if(!pwd){showLoginError('請輸入密碼');return}
+  const users=getUsers();
+  if(!users[email]){showLoginError('此帳號尚未註冊，請先建立帳號 🌸');return}
+  if(users[email].password!==pwd){showLoginError('密碼錯誤，請再試一次 🔒');return}
+  enterApp(email,users[email].name);
+}
+
+function doRegister(){
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim().toLowerCase();
+  const pwd=document.getElementById('reg-pwd').value;
+  clearErrors();
+  if(!name){showRegError('請輸入暱稱');return}
+  if(!email){showRegError('請輸入電子郵件');return}
+  if(!/\S+@\S+\.\S+/.test(email)){showRegError('電子郵件格式不正確');return}
+  if(pwd.length<8){showRegError('密碼至少需要 8 個字元');return}
+  const users=getUsers();
+  if(users[email]){showRegError('此電子郵件已被註冊，請直接登入 ✨');return}
+  users[email]={name,password:pwd};
+  saveUsers(users);
+  switchTab('login');
+  document.getElementById('login-email').value=email;
+  document.getElementById('login-pwd').value='';
+  document.getElementById('reg-name').value='';
+  document.getElementById('reg-email').value='';
+  document.getElementById('reg-pwd').value='';
+  const el=document.getElementById('login-error');
+  el.style.background='#F0FFF5'; el.style.borderColor='#A8E6CF'; el.style.color='#1A8C4E';
+  document.getElementById('login-error-msg').textContent=`帳號建立成功！歡迎 ${name}，請輸入密碼登入 🎉`;
+  el.classList.add('show');
+}
+
+function doLogout(){
+  removeImage(); resetAnalysis(); clearErrors();
+  document.getElementById('login-email').value='';
+  document.getElementById('login-pwd').value='';
+  currentEmail='';
+  showPage('login');
+}
+
+let currentEmail='';
+function enterApp(email,name){
+  currentEmail=email;
+  document.getElementById('nav-username').textContent=name;
+  document.getElementById('welcome-msg').textContent=`嗨嗨 ${name}！準備好偵查今天的食物了嗎？ 🕵️`;
+  renderHistory();
+  initApiKeyUI();
+  renderAvatar();
+  if(location.protocol==='file:'){
+    document.getElementById('file-warning').classList.add('show');
+  }
+  showPage('app');
+}
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+}
+
+// ── Gemini API Key ──
+function apiKeyStorageKey(){ return `si_gemini_key_${currentEmail}`; }
+function getApiKey(){ return localStorage.getItem(apiKeyStorageKey())||''; }
+function saveApiKey(){
+  const k=document.getElementById('apikey-input').value.trim();
+  if(!k){alert('請輸入 API Key！');return}
+  localStorage.setItem(apiKeyStorageKey(),k);
+  initApiKeyUI();
+}
+function changeApiKey(){
+  document.getElementById('apikey-set-row').classList.remove('show');
+  document.getElementById('apikey-banner').style.display='flex';
+  document.getElementById('apikey-input').value='';
+}
+function initApiKeyUI(){
+  const key=getApiKey();
+  if(key){
+    document.getElementById('apikey-banner').style.display='none';
+    document.getElementById('apikey-set-row').classList.add('show');
+  } else {
+    document.getElementById('apikey-banner').style.display='flex';
+    document.getElementById('apikey-set-row').classList.remove('show');
+    document.getElementById('apikey-input').value='';
+  }
+}
+
+// ── History ──
+function historyKey(){ return `si_history_${currentEmail}`; }
+function getHistory(){ try{return JSON.parse(localStorage.getItem(historyKey())||'[]')}catch{return[]} }
+function saveHistoryData(list){ localStorage.setItem(historyKey(),JSON.stringify(list)); }
+function addHistory(name,score){
+  const list=getHistory();
+  list.unshift({name,score,time:new Date().toISOString()});
+  saveHistoryData(list.slice(0,20));
+  renderHistory();
+}
+function formatTimeAgo(iso){
+  const d=Date.now()-new Date(iso).getTime();
+  const m=Math.floor(d/60000),h=Math.floor(d/3600000),dy=Math.floor(d/86400000);
+  if(m<1) return '剛才';
+  if(m<60) return `${m} 分鐘前`;
+  if(h<24) return `${h} 小時前`;
+  if(dy<7) return `${dy} 天前`;
+  return `${Math.floor(dy/7)} 週前`;
+}
+const SCORE_STYLE={
+  A:{bg:'#D4F4E2',color:'#1A8C4E'}, B:{bg:'#DCFAEC',color:'#2BA65E'},
+  C:{bg:'#FFF4CC',color:'#CC8800'}, D:{bg:'#FFE5E5',color:'#CC2222'},
+};
+function renderHistory(){
+  const c=document.getElementById('history-container');
+  const list=getHistory();
+  if(!list.length){
+    c.innerHTML=`<div class="history-empty"><span class="empty-icon">📭</span>尚無分析記錄，快來掃描第一個食品吧！</div>`;
+    return;
+  }
+  const show=list.slice(0,Math.max(3,Math.min(list.length,5)));
+  c.innerHTML='<div class="history-list">'+show.map(h=>{
+    const s=SCORE_STYLE[h.score]||{bg:'#EEE',color:'#888'};
+    return `<div class="history-card">
+      <div class="history-score-badge" style="background:${s.bg};color:${s.color};">${h.score||'?'}</div>
+      <div class="history-info">
+        <div class="history-name">${h.name}</div>
+        <div class="history-time">⏱ ${formatTimeAgo(h.time)}</div>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+// ── File / Camera ──
+let currentImageBase64=null, currentImageType='image/jpeg';
+
+function triggerUpload(){ document.getElementById('file-input').click(); }
+function handleFileInput(e){ if(e.target.files[0]) setImage(e.target.files[0]); }
+function handleDragOver(e){ e.preventDefault(); document.getElementById('upload-area').classList.add('dragover'); }
+function handleDrop(e){
+  e.preventDefault(); document.getElementById('upload-area').classList.remove('dragover');
+  const f=e.dataTransfer.files[0]; if(f&&f.type.startsWith('image/')) setImage(f);
+}
+function setImage(file){
+  currentImageType=file.type||'image/jpeg';
+  const r=new FileReader();
+  r.onload=ev=>{
+    const url=ev.target.result;
+    currentImageBase64=url.split(',')[1];
+    document.getElementById('preview-img').src=url;
+    document.getElementById('preview-wrap').classList.add('show');
+    document.getElementById('upload-area').style.display='none';
+    document.getElementById('btn-analyze').disabled=false;
+  };
+  r.readAsDataURL(file);
+}
+function removeImage(){
+  currentImageBase64=null;
+  document.getElementById('preview-wrap').classList.remove('show');
+  document.getElementById('preview-img').src='';
+  document.getElementById('upload-area').style.display='';
+  document.getElementById('btn-analyze').disabled=true;
+  document.getElementById('file-input').value='';
+}
+
+let videoStream=null;
+function openCamera(){
+  document.getElementById('camera-modal').classList.add('show');
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+    .then(s=>{videoStream=s;document.getElementById('camera-video').srcObject=s;})
+    .catch(()=>{showError('unknown','無法開啟相機，請確認瀏覽器已授予相機權限。');closeCamera();});
+}
+function closeCamera(){
+  if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}
+  document.getElementById('camera-modal').classList.remove('show');
+}
+function capturePhoto(){
+  const v=document.getElementById('camera-video'),c=document.getElementById('canvas-hidden');
+  c.width=v.videoWidth||640; c.height=v.videoHeight||480;
+  c.getContext('2d').drawImage(v,0,0);
+  const url=c.toDataURL('image/jpeg',0.92);
+  currentImageBase64=url.split(',')[1]; currentImageType='image/jpeg';
+  document.getElementById('preview-img').src=url;
+  document.getElementById('preview-wrap').classList.add('show');
+  document.getElementById('upload-area').style.display='none';
+  document.getElementById('btn-analyze').disabled=false;
+  closeCamera();
+}
+
+// ── Error ──
+const ERROR_TYPES={
+  no_key:   {icon:'🔑',title:'尚未設定 API Key',    msg:'請先輸入 Gemini API Key 才能使用 AI 分析功能。',        tips:['點擊上方的金鑰輸入框','前往 aistudio.google.com 免費申請','貼上 Key 後點「儲存」']},
+  not_ingredient:{icon:'🤔',title:'這不像是配料表耶⋯',msg:'小偵探找不到食品配料表內容，請確認上傳的是配料表照片！',tips:['確認照片有「配料」或「成分」字樣','拍攝食品包裝背面的成分標示','避免上傳食物本身的照片']},
+  blur:     {icon:'😵',title:'圖片太模糊了！',        msg:'小偵探看不清楚文字，請重新拍攝更清晰的照片。',            tips:['靠近一點讓文字更大','保持手機穩定','在自然光下拍攝','確保鏡頭乾淨']},
+  network:  {icon:'📡',title:'網路連線出問題了',      msg:'無法連上伺服器，請檢查網路連線後再試。',                  tips:['確認網路已連線','重新整理頁面後再試','稍後再試']},
+  api_key_invalid:{icon:'🚫',title:'API Key 無效',   msg:'Gemini API Key 不正確或已過期，請重新設定。',            tips:['確認複製完整的 Key','到 aistudio.google.com 確認 Key 是否有效','點「更換 Key」重新輸入']},
+  parse:    {icon:'🧩',title:'分析結果解讀失敗',      msg:'AI 回傳了奇怪的格式，請重試一次通常就能成功！',            tips:['直接點「重新試試」','若持續失敗請重新上傳照片']},
+  unknown:  {icon:'😿',title:'發生了未知的錯誤',      msg:'小偵探也不知道哪裡出了問題⋯請再試一次吧！',              tips:['重新上傳照片再試','重新整理頁面']},
+};
+function showError(type,customMsg){
+  const e=ERROR_TYPES[type]||ERROR_TYPES.unknown;
+  document.getElementById('error-icon').textContent=e.icon;
+  document.getElementById('error-title').textContent=e.title;
+  document.getElementById('error-msg').textContent=customMsg||e.msg;
+  document.getElementById('error-tips-list').innerHTML=e.tips.map(t=>`<li>${t}</li>`).join('');
+  document.getElementById('error-card').classList.add('show');
+  document.getElementById('error-card').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function hideError(){ document.getElementById('error-card').classList.remove('show'); }
+function retryAnalysis(){ hideError(); removeImage(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+// ── Analysis (Gemini) ──
+async function startAnalysis(){
+  if(!currentImageBase64) return;
+  const apiKey=getApiKey();
+  if(!apiKey){ showError('no_key'); return; }
+
+  document.getElementById('btn-analyze').disabled=true;
+  document.getElementById('loading-card').classList.add('show');
+  document.getElementById('result-section').classList.remove('show');
+  hideError();
+
+  const fill=document.getElementById('progress-fill');
+  fill.style.animation='none'; fill.offsetHeight; fill.style.animation='';
+
+  const msgs=['小偵探正在辨識配料表文字⋯','查詢成分資料庫中⋯','評估每個成分的安全性⋯','整理分析報告⋯'];
+  let mi=0;
+  const lt=document.getElementById('loading-text');
+  const timer=setInterval(()=>{mi=(mi+1)%msgs.length; lt.textContent=msgs[mi];},1800);
+
+  const done=()=>{
+    clearInterval(timer);
+    document.getElementById('loading-card').classList.remove('show');
+    document.getElementById('btn-analyze').disabled=false;
+  };
+
+  const prompt=`你是一位專業的食品安全分析師，熟悉台灣、歐盟、美國 FDA 的食品添加物法規。
+請仔細辨識並分析這張圖片中的食品配料表，以繁體中文回覆。
+
+只回傳以下 JSON 格式，不要有任何其他文字或 markdown：
+{
+  "name": "食品名稱（從包裝辨識，無法辨識則根據成分推測）",
+  "score": "A或B或C或D",
+  "summary": "共X種成分 · Y種需注意 · Z種警告",
+  "tip": "針對這個食品的具體健康建議，約2-3句話",
+  "ingredients": [
+    {"name":"成分完整名稱","type":"safe或caution或danger","desc":"功能說明與健康影響，約1-2句"}
+  ],
+  "warnings": ["具體注意事項"]
+}
+
+type 判斷：safe=天然/一般安全；caution=高糖高鈉高脂/部分人敏感；danger=已知健康疑慮添加物
+score：A=幾乎全天然；B=少數需注意；C=多添加物或高糖高鈉；D=多種有疑慮成分
+
+若圖片不是配料表，回傳：{"error":"not_ingredient"}
+若圖片太模糊無法辨識，回傳：{"error":"blur"}`;
+
+  const dbg = (msg) => { console.log('[偵探]', msg); };
+
+  dbg('開始分析，圖片大小：' + Math.round(currentImageBase64.length * 0.75 / 1024) + 'KB');
+  dbg('API Key 前8碼：' + apiKey.substring(0,8) + '...');
+
+  const callApi = async () => {
+    dbg('發送請求到 Gemini API...');
+    return await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          contents:[{role:'user', parts:[
+            {inline_data:{mime_type:currentImageType, data:currentImageBase64}},
+            {text:prompt}
+          ]}],
+          generationConfig:{temperature:0.2, maxOutputTokens:8192}
+        })
+      }
+    );
+  };
+
+  try {
+    let res = await callApi();
+    dbg(`伺服器回應：HTTP ${res.status}`);
+
+    // 429 自動等待重試一次
+    if(res.status === 429){
+      dbg('請求太頻繁，等待 15 秒後自動重試⋯');
+      lt.textContent = '請求太頻繁，等待 15 秒後自動重試⋯';
+      await new Promise(r => setTimeout(r, 15000));
+      res = await callApi();
+      dbg(`重試回應：HTTP ${res.status}`);
+    }
+
+    if(!res.ok){
+      done();
+      const errBody=await res.json().catch(()=>({}));
+      const status=res.status;
+      const errMsg=errBody?.error?.message||'';
+      console.error('Gemini API Error:', status, errMsg, errBody);
+      if(status===404){showError('unknown',`找不到模型（404）：${errMsg||'請確認 API Key 是否正確'}`);}
+      else if(status===400){showError('api_key_invalid',`請求格式錯誤（400）：${errMsg}`);}
+      else if(status===403){showError('api_key_invalid',`API Key 無效或無權限（403）：${errMsg}`);}
+      else if(status===429){showError('unknown',`請求太頻繁（429），請等 1 分鐘後再試。`);}
+      else if(status>=500){showError('network',`伺服器錯誤（${status}）：${errMsg}`);}
+      else{showError('unknown',`錯誤 ${status}：${errMsg||'請稍後再試'}`);}
+      return;
+    }
+
+    const data=await res.json();
+    const rawText=data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    dbg('AI 回傳長度：' + rawText.length + ' 字元');
+    dbg('回傳內容前50字：' + rawText.substring(0,50));
+    let parsed;
+    try{
+      // 嘗試從回傳內容中擷取 JSON 物件
+      const clean = rawText.replace(/```json|```/g,'').trim();
+      // 找到第一個 { 到最後一個 } 之間的內容
+      const start = clean.indexOf('{');
+      const end = clean.lastIndexOf('}');
+      if(start === -1 || end === -1) throw new Error('找不到 JSON 物件');
+      const jsonStr = clean.substring(start, end+1);
+      parsed=JSON.parse(jsonStr);
+      dbg('JSON 解析成功，食品名：' + parsed.name);
+    }catch(e){
+      dbg('JSON 解析失敗：' + e.message);
+      done(); showError('parse'); return;
+    }
+
+    done();
+
+    if(parsed.error){
+      showError(parsed.error==='blur'?'blur':'not_ingredient'); return;
+    }
+
+    parsed.scoreClass='score-'+parsed.score;
+    showResults(parsed);
+    addHistory(parsed.name, parsed.score);
+
+  }catch(err){
+    dbg('例外錯誤：' + err.message);
+    done();
+    showError(err instanceof TypeError?'network':'unknown', err.message);
+  }
+}
+
+function showResults(data){
+  document.getElementById('score-letter').textContent=data.score;
+  document.getElementById('result-score').className='result-score '+(data.scoreClass||'score-C');
+  document.getElementById('product-name').textContent=data.name;
+  document.getElementById('product-summary').textContent=data.summary;
+  document.getElementById('tip-text').textContent=data.tip;
+  const grid=document.getElementById('ingredients-grid');
+  grid.innerHTML='';
+  (data.ingredients||[]).forEach(ing=>{
+    const card=document.createElement('div'); card.className='ingredient-card';
+    const lbl={safe:'安全',caution:'注意',danger:'警告'}[ing.type]||'一般';
+    card.innerHTML=`<div class="ing-dot dot-${ing.type}"></div><div><div class="ing-name">${ing.name}</div><span class="ing-type type-${ing.type}">${lbl}</span><div class="ing-desc">${ing.desc}</div></div>`;
+    grid.appendChild(card);
+  });
+  const wlist=document.getElementById('warnings-list'); wlist.innerHTML='';
+  (data.warnings||[]).forEach(w=>{const d=document.createElement('div');d.className='warning-item';d.textContent=w;wlist.appendChild(d);});
+  document.getElementById('warnings-box').style.display=(data.warnings&&data.warnings.length)?'':'none';
+  document.getElementById('result-section').classList.add('show');
+  document.getElementById('result-section').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function resetAnalysis(){
+  removeImage(); hideError();
+  document.getElementById('result-section').classList.remove('show');
+  document.getElementById('loading-card').classList.remove('show');
+  document.getElementById('btn-analyze').disabled=true;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
