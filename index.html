@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🍓 成分小偵探 — 食品配料分析</title>
+<title>🥦 健康小偵探 — 食品分析與健康管理</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -93,7 +93,60 @@
   .btn-change-key { padding:0.3rem 0.8rem;border:2px solid var(--mint-dark);border-radius:var(--radius-md);background:transparent;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;color:var(--mint-dark);transition:all 0.2s; }
   .btn-change-key:hover { background:var(--mint);color:#1A5C40; }
 
-  /* grade intro */
+  /* nav tabs */
+  .nav-tabs { display:flex;gap:0.4rem;background:var(--pink-pale);border-radius:var(--radius-md);padding:4px; }
+  .nav-tab { padding:0.45rem 1rem;border:none;background:transparent;border-radius:calc(var(--radius-md)-4px);font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:700;color:var(--text-mid);cursor:pointer;transition:all 0.2s;white-space:nowrap; }
+  .nav-tab.active { background:var(--white);color:var(--pink);box-shadow:0 2px 8px rgba(255,143,171,0.2); }
+
+  /* health page */
+  .health-form-card { background:var(--white);border-radius:var(--radius-lg);padding:1.8rem;box-shadow:var(--shadow-sm);margin-bottom:1.5rem; }
+  .health-form-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-bottom:1.2rem; }
+  .gender-btns { display:flex;gap:0.6rem; }
+  .gender-btn { flex:1;padding:0.65rem;border:2px solid var(--pink-light);border-radius:var(--radius-md);background:var(--white);cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:700;color:var(--text-mid);transition:all 0.2s; }
+  .gender-btn.active { border-color:var(--pink);background:var(--pink-pale);color:var(--pink); }
+  .activity-btns { display:flex;gap:0.5rem;flex-wrap:wrap; }
+  .activity-btn { flex:1;min-width:80px;padding:0.7rem 0.4rem;border:2px solid var(--pink-light);border-radius:var(--radius-md);background:var(--white);cursor:pointer;font-family:'Nunito',sans-serif;text-align:center;transition:all 0.2s; }
+  .activity-btn span { display:block;font-size:0.85rem;font-weight:800;color:var(--text-dark);margin-top:3px; }
+  .activity-btn small { display:block;font-size:0.72rem;color:var(--text-light);font-weight:600; }
+  .activity-btn.active,.activity-btn:hover { border-color:var(--lavender-dark);background:#F5F0FF; }
+
+  /* health result */
+  .health-result-card { background:var(--white);border-radius:var(--radius-lg);padding:1.8rem;box-shadow:var(--shadow-sm);margin-bottom:1.2rem; }
+  .health-result-row { display:flex;gap:1.5rem;align-items:center; }
+  .health-stat-box { width:90px;height:90px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;font-weight:900; }
+  .health-stat-num { font-size:1.8rem;line-height:1; }
+  .health-stat-lbl { font-size:0.72rem;font-weight:700;margin-top:2px; }
+  .health-stat-desc { flex:1; }
+  .health-stat-desc h3 { font-size:1.1rem;font-weight:900;margin-bottom:0.3rem; }
+  .health-stat-desc p { font-size:0.85rem;color:var(--text-mid);margin-bottom:0.8rem; }
+  .bmi-bar-wrap { margin-top:0.4rem; }
+  .bmi-bar { height:10px;border-radius:5px;background:linear-gradient(90deg,#60AAFF 0%,#06D6A0 25%,#FFD166 55%,#FF6B6B 80%);position:relative;margin-bottom:4px; }
+  .bmi-bar-fill { display:none; }
+  .bmi-marker { position:absolute;top:-4px;width:18px;height:18px;border-radius:50%;background:var(--white);border:3px solid var(--text-dark);transform:translateX(-50%);transition:left 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+  .bmi-bar-labels { display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-light);font-weight:700; }
+
+  .health-cal-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.2rem; }
+  .health-cal-card { background:var(--white);border-radius:var(--radius-md);padding:1.2rem;text-align:center;box-shadow:var(--shadow-sm);border-top:4px solid; }
+  .health-cal-icon { font-size:1.8rem;margin-bottom:0.4rem; }
+  .health-cal-num { font-size:1.5rem;font-weight:900;color:var(--text-dark); }
+  .health-cal-lbl { font-size:0.85rem;font-weight:800;color:var(--text-mid);margin:2px 0; }
+  .health-cal-sub { font-size:0.75rem;color:var(--text-light); }
+
+  .health-extra-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem; }
+  .health-extra-card { background:var(--white);border-radius:var(--radius-md);padding:1.2rem;text-align:center;box-shadow:var(--shadow-sm); }
+  .health-extra-icon { font-size:1.6rem;margin-bottom:0.4rem; }
+  .health-extra-title { font-size:0.8rem;font-weight:700;color:var(--text-mid);margin-bottom:0.3rem; }
+  .health-extra-val { font-size:1.1rem;font-weight:900;color:var(--text-dark);margin-bottom:2px; }
+  .health-extra-sub { font-size:0.72rem;color:var(--text-light); }
+
+  @media(max-width:600px){
+    .health-form-grid{grid-template-columns:1fr}
+    .health-cal-grid{grid-template-columns:repeat(3,1fr)}
+    .health-extra-grid{grid-template-columns:repeat(3,1fr)}
+    .nav-tabs{display:none}
+    .nav-tab{font-size:0.8rem;padding:0.4rem 0.6rem}
+  }
+  /* ── 趣味功能 ── */
   .grade-intro { display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:2rem; }
   .grade-card {
     background:var(--white);border-radius:var(--radius-md);
@@ -227,11 +280,76 @@
   .emoji-opt:hover,.emoji-opt.selected { border-color:var(--pink);background:var(--pink-light); }
   #avatar-file-input { display:none; }
 
+  /* dark mode */
+  body.dark {
+    --cream: #1A1A2E; --white: #242438; --text-dark: #F0E6FF;
+    --text-mid: #C4B0D8; --text-light: #8A7A9A;
+    --pink-pale: #2D1F35; --pink-light: #5C3060;
+    --peach-light: #4A3020; --mint: #1A3A2E;
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+    --shadow-sm: 0 4px 16px rgba(0,0,0,0.3);
+  }
+  body.dark .nav { background:#1E1E32; }
+  body.dark .login-card { background:#242438; }
+  body.dark .form-input { background:#1A1A2E; color:var(--text-dark); }
+  body.dark .tab-btn.active { background:#1A1A2E; }
+  body.dark .btn-upload-type { background:var(--white); }
+  body.dark .upload-area { background:var(--white); }
+  body.dark .grade-card,.dark .ingredient-card,.dark .history-card,
+  body.dark .result-header,.dark .loading-card { background:#242438; }
+  /* 健康建議框深色模式 */
+  body.dark .tip-box { background:#1A3A2E; }
+  body.dark .tip-box h4 { color:#7FFFCF; }
+  body.dark .tip-box p { color:#A0FFDD; }
+  /* 活動程度按鈕深色模式 */
+  body.dark .activity-btn { background:#2A2A42; border-color:#4A4A6A; }
+  body.dark .activity-btn span { color:#F0E6FF; }
+  body.dark .activity-btn small { color:#9A8AB0; }
+  body.dark .activity-btn.active { background:#3A2A5A; border-color:var(--lavender-dark); }
+  body.dark .activity-btn:hover { background:#3A2A5A; border-color:var(--lavender-dark); }
+  /* 性別按鈕深色模式 */
+  body.dark .gender-btn { background:#2A2A42; border-color:#4A4A6A; color:#F0E6FF; }
+  body.dark .gender-btn.active { background:#3D1F2E; border-color:var(--pink); color:var(--pink); }
+  /* 健康表單卡片深色模式 */
+  body.dark .health-form-card { background:#242438; }
+  body.dark .health-result-card { background:#242438; }
+  body.dark .health-cal-card { background:#242438; }
+  body.dark .health-extra-card { background:#242438; }
+  body.dark .health-cal-num { color:#F0E6FF; }
+  body.dark .health-extra-val { color:#F0E6FF; }
+
+  .btn-darkmode {
+    width:34px;height:34px;border-radius:50%;
+    border:2px solid var(--pink-light);background:transparent;
+    cursor:pointer;font-size:1rem;transition:all 0.2s;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .btn-darkmode:hover { border-color:var(--pink);background:var(--pink-pale); }
+
+  /* allergen modal */
+  .allergen-modal { background:var(--white);border-radius:var(--radius-xl);padding:2rem;width:90%;max-width:480px;box-shadow:0 16px 60px rgba(0,0,0,0.2);animation:popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);max-height:90vh;overflow-y:auto; }
+  .allergen-modal h3 { font-size:1.2rem;font-weight:900;margin-bottom:0.3rem;text-align:center; }
+  .allergen-modal .sub { font-size:0.85rem;color:var(--text-mid);text-align:center;margin-bottom:1.4rem; }
+  .allergen-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin-bottom:1.4rem; }
+  .allergen-chip {
+    padding:0.6rem 0.4rem;border:2px solid var(--pink-light);border-radius:var(--radius-md);
+    background:var(--white);cursor:pointer;text-align:center;
+    font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:700;
+    color:var(--text-mid);transition:all 0.2s;
+  }
+  .allergen-chip:hover { border-color:var(--pink);background:var(--pink-pale); }
+  .allergen-chip.selected { border-color:var(--danger);background:#FFF0F0;color:var(--danger); }
+  .allergen-chip .chip-icon { font-size:1.3rem;display:block;margin-bottom:3px; }
+
+  /* allergen tags in result */
+  .ing-allergen { font-size:0.72rem;font-weight:800;padding:2px 7px;border-radius:20px;background:#FFE5E5;color:#CC2222;display:inline-block;margin-left:4px;vertical-align:middle; }
+
   .paw-deco { position:fixed;bottom:20px;right:20px;font-size:1.5rem;opacity:0.25;pointer-events:none;animation:float 4s ease-in-out infinite; }
 
   @media(max-width:600px){
     .welcome-banner{padding:1.5rem} .banner-emoji{font-size:3rem;right:1rem}
     .ingredients-grid{grid-template-columns:1fr} .upload-btns{flex-direction:column}
+    .allergen-grid{grid-template-columns:repeat(3,1fr)}
   }
 </style>
 </head>
@@ -247,8 +365,8 @@
 <div id="page-login" class="page active">
   <div class="login-card">
     <div class="login-mascot">🔍</div>
-    <h1 class="login-title">成分小偵探</h1>
-    <p class="login-subtitle">掃描食品配料表，守護你的健康 🍓</p>
+    <h1 class="login-title">健康小偵探</h1>
+    <p class="login-subtitle">掃描食品配料表，守護你的健康生活 🥦</p>
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('login')">登入</button>
       <button class="tab-btn" onclick="switchTab('register')">註冊</button>
@@ -289,15 +407,21 @@
 <!-- ══ APP ══ -->
 <div id="page-app" class="page">
   <nav class="nav">
-    <div class="nav-logo"><span>🔍</span> 成分小偵探</div>
+    <div class="nav-logo"><span>🔍</span> 健康小偵探</div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tab-analyze" onclick="switchAppTab('analyze')">🔬 分析</button>
+      <button class="nav-tab" id="tab-health" onclick="switchAppTab('health')">💪 健康計算</button>
+    </div>
     <div class="nav-user">
+      <button class="btn-darkmode" id="btn-darkmode" onclick="toggleDarkMode()" title="深色模式">🌙</button>
       <div class="nav-avatar" id="nav-avatar" onclick="openAvatarModal()" title="點擊更換頭像">😊</div>
       <span id="nav-username" style="font-weight:700;font-size:.9rem;color:var(--text-mid)"></span>
+      <button class="btn-logout" onclick="openAllergenModal(false)">⚠️ 過敏原</button>
       <button class="btn-logout" onclick="openChangePwdModal()">🔒 改密碼</button>
       <button class="btn-logout" onclick="doLogout()">登出</button>
     </div>
   </nav>
-  <div class="app-content">
+  <div class="app-content" id="app-main-content">
 
     <div class="welcome-banner">
       <h2 id="welcome-msg">嗨嗨！準備好偵查今天的食物了嗎？ 🕵️</h2>
@@ -384,7 +508,7 @@
     <!-- loading -->
     <div class="loading-card" id="loading-card">
       <div class="loading-emojis">🔍🧪🍀</div>
-      <div class="loading-text" id="loading-text">小偵探正在努力分析中⋯</div>
+      <div class="loading-text" id="loading-text">健康小偵探正在努力分析中⋯</div>
       <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
       <div id="debug-status" style="display:none;"></div>
     </div>
@@ -425,23 +549,180 @@
       </div>
       <div class="tip-box">
         <div class="tip-icon">💡</div>
-        <div><h4>小偵探的建議</h4><p id="tip-text"></p></div>
+        <div><h4>健康小偵探的建議</h4><p id="tip-text"></p></div>
       </div>
     </div>
 
   </div>
-</div>
 
-<!-- Camera -->
-<div class="modal-overlay" id="camera-modal">
-  <div class="camera-modal">
-    <h3>📷 相機掃描</h3>
-    <p>將配料表對準相機，然後按下拍攝</p>
-    <video id="camera-video" autoplay playsinline></video>
-    <canvas id="canvas-hidden" width="640" height="480"></canvas>
-    <div class="camera-controls">
-      <button class="btn-capture" onclick="capturePhoto()">📸 拍攝</button>
-      <button class="btn-cancel" onclick="closeCamera()">取消</button>
+  <!-- ══ HEALTH PAGE ══ -->
+  <div id="section-health" style="display:none;">
+    <div class="app-content">
+      <div class="welcome-banner" style="background:linear-gradient(135deg,#A8E6CF 0%,#5CB891 60%,#8A70FF 100%);">
+        <h2>💪 健康計算機</h2>
+        <p>輸入你的基本資料，計算 BMI 及每日建議攝取熱量</p>
+        <div class="banner-emoji">🥗</div>
+      </div>
+
+    <!-- input form -->
+    <div class="health-form-card">
+      <div class="section-title">📋 基本資料</div>
+      <div class="health-form-grid">
+        <div class="form-group">
+          <label class="form-label">⚥ 性別</label>
+          <div class="gender-btns">
+            <button class="gender-btn active" id="gender-male" onclick="selectGender('male')">👨 男性</button>
+            <button class="gender-btn" id="gender-female" onclick="selectGender('female')">👩 女性</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🎂 年齡</label>
+          <input class="form-input" type="number" id="health-age" placeholder="例：25" min="1" max="120">
+        </div>
+        <div class="form-group">
+          <label class="form-label">📏 身高（公分）</label>
+          <input class="form-input" type="number" id="health-height" placeholder="例：165" min="50" max="250">
+        </div>
+        <div class="form-group">
+          <label class="form-label">⚖️ 體重（公斤）</label>
+          <input class="form-input" type="number" id="health-weight" placeholder="例：60" min="10" max="300">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">🏃 活動程度</label>
+        <div class="activity-btns">
+          <button class="activity-btn active" data-val="1.2" onclick="selectActivity(this)">🛋️<span>久坐</span><small>幾乎不運動</small></button>
+          <button class="activity-btn" data-val="1.375" onclick="selectActivity(this)">🚶<span>輕度</span><small>每週 1-3 天</small></button>
+          <button class="activity-btn" data-val="1.55" onclick="selectActivity(this)">🏃<span>中度</span><small>每週 3-5 天</small></button>
+          <button class="activity-btn" data-val="1.725" onclick="selectActivity(this)">💪<span>高度</span><small>每週 6-7 天</small></button>
+          <button class="activity-btn" data-val="1.9" onclick="selectActivity(this)">🔥<span>極高</span><small>體力勞動</small></button>
+        </div>
+      </div>
+
+      <button class="btn-analyze" onclick="calcHealth()" style="margin-bottom:0;">
+        🧮 立即計算
+      </button>
+    </div>
+
+    <!-- results -->
+    <div id="health-result" style="display:none;">
+      <div class="section-title" style="margin-top:2rem;">📊 計算結果</div>
+
+      <!-- BMI card -->
+      <div class="health-result-card">
+        <div class="health-result-row">
+          <div class="health-stat-box" id="bmi-box">
+            <div class="health-stat-num" id="bmi-val">--</div>
+            <div class="health-stat-lbl">BMI</div>
+          </div>
+          <div class="health-stat-desc">
+            <h3 id="bmi-label">--</h3>
+            <p id="bmi-desc"></p>
+            <div class="bmi-bar-wrap">
+              <div class="bmi-bar">
+                <div class="bmi-bar-fill" id="bmi-bar-fill"></div>
+                <div class="bmi-marker" id="bmi-marker"></div>
+              </div>
+              <div class="bmi-bar-labels">
+                <span>過輕</span><span>正常</span><span>過重</span><span>肥胖</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calories cards -->
+      <div class="health-cal-grid" id="cal-grid">
+        <div class="health-cal-card" style="border-color:#A8E6CF;">
+          <div class="health-cal-icon">🔥</div>
+          <div class="health-cal-num" id="cal-maintain">--</div>
+          <div class="health-cal-lbl">維持體重</div>
+          <div class="health-cal-sub">每日建議攝取</div>
+        </div>
+        <div class="health-cal-card" id="cal-lose-card" style="border-color:#FFB347;">
+          <div class="health-cal-icon">📉</div>
+          <div class="health-cal-num" id="cal-lose">--</div>
+          <div class="health-cal-lbl">減重目標</div>
+          <div class="health-cal-sub">減少 500 大卡/天</div>
+        </div>
+        <div class="health-cal-card" id="cal-gain-card" style="border-color:#C9B8FF;">
+          <div class="health-cal-icon">📈</div>
+          <div class="health-cal-num" id="cal-gain">--</div>
+          <div class="health-cal-lbl">增重目標</div>
+          <div class="health-cal-sub">增加 500 大卡/天</div>
+        </div>
+      </div>
+
+      <!-- ideal weight & macro -->
+      <div class="health-extra-grid">
+        <div class="health-extra-card">
+          <div class="health-extra-icon">⚖️</div>
+          <div class="health-extra-title">理想體重範圍</div>
+          <div class="health-extra-val" id="ideal-weight">--</div>
+          <div class="health-extra-sub">BMI 18.5 ~ 24.9</div>
+        </div>
+        <div class="health-extra-card">
+          <div class="health-extra-icon">🥩</div>
+          <div class="health-extra-title">每日蛋白質</div>
+          <div class="health-extra-val" id="protein-val">--</div>
+          <div class="health-extra-sub">建議攝取量</div>
+        </div>
+        <div class="health-extra-card">
+          <div class="health-extra-icon">💧</div>
+          <div class="health-extra-title">每日飲水量</div>
+          <div class="health-extra-val" id="water-val">--</div>
+          <div class="health-extra-sub">建議攝取量</div>
+        </div>
+      </div>
+
+      <!-- tip -->
+      <div class="tip-box" id="health-tip-box">
+        <div class="tip-icon">💡</div>
+        <div><h4>健康小偵探的建議</h4><p id="health-tip"></p></div>
+      </div>
+    </div>
+  </div>
+  </div><!-- end section-health -->
+
+  <!-- Camera -->
+  <div class="modal-overlay" id="camera-modal">
+    <div class="camera-modal">
+      <h3>📷 相機掃描</h3>
+      <p>將配料表對準相機，然後按下拍攝</p>
+      <video id="camera-video" autoplay playsinline></video>
+      <canvas id="canvas-hidden" width="640" height="480"></canvas>
+      <div class="camera-controls">
+        <button class="btn-capture" onclick="capturePhoto()">📸 拍攝</button>
+        <button class="btn-cancel" onclick="closeCamera()">取消</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end page-app -->
+
+<!-- Allergen Modal -->
+<div class="modal-overlay" id="allergen-modal">
+  <div class="allergen-modal">
+    <h3>⚠️ 過敏原設定</h3>
+    <p class="sub" id="allergen-sub">請選擇你對哪些成分過敏，分析時會特別標示提醒你！</p>
+    <div class="allergen-grid">
+      <div class="allergen-chip" onclick="toggleAllergen(this)" data-key="麩質"><span class="chip-icon">🌾</span>麩質（麵粉）</div>
+      <div class="allergen-chip" onclick="toggleAllergen(this)" data-key="蛋"><span class="chip-icon">🥚</span>蛋類</div>
+      <div class="allergen-chip" onclick="toggleAllergen(this)" data-key="牛奶"><span class="chip-icon">🥛</span>牛奶／乳製品</div>
+      <div class="allergen-chip" onclick="toggleAllergen(this)" data-key="花生"><span class="chip-icon">🥜</span>花生</div>
+      <div class="allergen-chip" onclick="toggleAllergen(this)" data-key="堅果"><span class="chip-icon">🌰</span>堅果類</div>
+      <div class="allergen-chip" onclick="toggleAllergen(this)" data-key="大豆"><span class="chip-icon">🫘</span>大豆／黃豆</div>
+      <div class="allergen-chip" onclick="toggleAllergen(this)" data-key="海鮮"><span class="chip-icon">🦐</span>海鮮／甲殼類</div>
+      <div class="allergen-chip" onclick="toggleAllergen(this)" data-key="魚類"><span class="chip-icon">🐟</span>魚類</div>
+      <div class="allergen-chip" onclick="toggleAllergen(this)" data-key="芝麻"><span class="chip-icon">🌿</span>芝麻</div>
+      <div class="allergen-chip" onclick="toggleAllergen(this)" data-key="MSG"><span class="chip-icon">🧂</span>味精（MSG）</div>
+      <div class="allergen-chip" onclick="toggleAllergen(this)" data-key="人工色素"><span class="chip-icon">🎨</span>人工色素</div>
+      <div class="allergen-chip" onclick="toggleAllergen(this)" data-key="防腐劑"><span class="chip-icon">🧪</span>防腐劑</div>
+    </div>
+    <div style="display:flex;gap:0.8rem;">
+      <button class="btn-primary" onclick="saveAllergens()" style="flex:1;" id="allergen-save-btn">儲存設定 ✨</button>
+      <button class="btn-cancel" id="allergen-skip-btn" onclick="skipAllergens()">略過</button>
     </div>
   </div>
 </div>
@@ -507,6 +788,56 @@
 </div>
 
 <script>
+
+
+// ── Dark Mode ──
+function darkModeKey(){ return `si_dark_${currentEmail}`; }
+function toggleDarkMode(){
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem(darkModeKey(), isDark ? '1' : '0');
+  document.getElementById('btn-darkmode').textContent = isDark ? '☀️' : '🌙';
+}
+function initDarkMode(){
+  const isDark = localStorage.getItem(darkModeKey()) === '1';
+  document.body.classList.toggle('dark', isDark);
+  document.getElementById('btn-darkmode').textContent = isDark ? '☀️' : '🌙';
+}
+
+// ── Allergen ──
+function allergenKey(){ return `si_allergens_${currentEmail}`; }
+function getAllergens(){ try{ return JSON.parse(localStorage.getItem(allergenKey())||'[]'); }catch{ return []; } }
+function saveAllergenData(list){ localStorage.setItem(allergenKey(), JSON.stringify(list)); }
+function openAllergenModal(isFirstTime){
+  document.querySelectorAll('.allergen-chip').forEach(c => c.classList.remove('selected'));
+  const saved = getAllergens();
+  document.querySelectorAll('.allergen-chip').forEach(c => {
+    if(saved.includes(c.dataset.key)) c.classList.add('selected');
+  });
+  document.getElementById('allergen-sub').textContent = isFirstTime
+    ? '歡迎！請選擇你對哪些成分過敏，分析時會特別標示提醒你～'
+    : '選擇你對哪些成分過敏，分析結果會特別標示提醒你！';
+  document.getElementById('allergen-skip-btn').style.display = isFirstTime ? '' : 'none';
+  document.getElementById('allergen-modal').classList.add('show');
+}
+function toggleAllergen(el){
+  el.classList.toggle('selected');
+}
+function saveAllergens(){
+  const selected = [];
+  document.querySelectorAll('.allergen-chip.selected').forEach(c => selected.push(c.dataset.key));
+  saveAllergenData(selected);
+  localStorage.setItem(`si_allergen_done_${currentEmail}`, '1');
+  document.getElementById('allergen-modal').classList.remove('show');
+}
+function skipAllergens(){
+  localStorage.setItem(`si_allergen_done_${currentEmail}`, '1');
+  document.getElementById('allergen-modal').classList.remove('show');
+}
+function checkFirstTimeAllergen(){
+  const done = localStorage.getItem(`si_allergen_done_${currentEmail}`);
+  if(!done) setTimeout(()=>openAllergenModal(true), 600);
+}
+
 // ── Change Password ──
 function openChangePwdModal(){
   document.getElementById('pwd-old').value='';
@@ -674,6 +1005,10 @@ function doLogout(){
   document.getElementById('login-email').value='';
   document.getElementById('login-pwd').value='';
   currentEmail='';
+  // 關閉所有 modal
+  document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('show'));
+  closeCamera();
+  document.body.classList.remove('dark');
   showPage('login');
 }
 
@@ -685,6 +1020,8 @@ function enterApp(email,name){
   renderHistory();
   initApiKeyUI();
   renderAvatar();
+  initDarkMode();
+  checkFirstTimeAllergen();
   if(location.protocol==='file:'){
     document.getElementById('file-warning').classList.add('show');
   }
@@ -693,6 +1030,129 @@ function enterApp(email,name){
 function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
+}
+
+// ── App Tab Switching ──
+function switchAppTab(tab){
+  document.getElementById('tab-analyze').classList.toggle('active', tab==='analyze');
+  document.getElementById('tab-health').classList.toggle('active', tab==='health');
+  document.getElementById('app-main-content').style.display = tab==='analyze' ? '' : 'none';
+  document.getElementById('section-health').style.display = tab==='health' ? '' : 'none';
+}
+
+// ── Health Calculator ──
+let selectedGender = 'male';
+let selectedActivity = 1.2;
+
+function selectGender(g){
+  selectedGender = g;
+  document.getElementById('gender-male').classList.toggle('active', g==='male');
+  document.getElementById('gender-female').classList.toggle('active', g==='female');
+}
+function selectActivity(el){
+  document.querySelectorAll('.activity-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  selectedActivity = parseFloat(el.dataset.val);
+}
+
+function calcHealth(){
+  const age    = parseFloat(document.getElementById('health-age').value);
+  const height = parseFloat(document.getElementById('health-height').value);
+  const weight = parseFloat(document.getElementById('health-weight').value);
+  if(!age||!height||!weight||age<1||height<50||weight<10){
+    alert('請確認所有欄位都已正確填寫！');return;
+  }
+
+  // BMI
+  const hm = height / 100;
+  const bmi = weight / (hm * hm);
+  let bmiLabel, bmiDesc, bmiColor, bmiPos;
+  if(bmi < 18.5){
+    bmiLabel='體重過輕'; bmiDesc='建議適度增加熱量攝取，並搭配均衡飲食。';
+    bmiColor='#60AAFF'; bmiPos=Math.max(3, (bmi/18.5)*22);
+  } else if(bmi < 24){
+    bmiLabel='體重正常 ✅'; bmiDesc='恭喜！你的體重在健康範圍內，繼續保持均衡飲食和規律運動。';
+    bmiColor='#06D6A0'; bmiPos=22 + ((bmi-18.5)/(24-18.5))*28;
+  } else if(bmi < 27){
+    bmiLabel='體重過重'; bmiDesc='建議適度控制飲食並增加運動量，將體重調整回正常範圍。';
+    bmiColor='#FFD166'; bmiPos=50 + ((bmi-24)/(27-24))*22;
+  } else {
+    bmiLabel='肥胖'; bmiDesc='建議諮詢醫師或營養師，制定個人化的減重計畫。';
+    bmiColor='#FF6B6B'; bmiPos=Math.min(95, 72 + ((bmi-27)/8)*25);
+  }
+
+  // BMR (Mifflin-St Jeor)
+  let bmr;
+  if(selectedGender==='male'){
+    bmr = 10*weight + 6.25*height - 5*age + 5;
+  } else {
+    bmr = 10*weight + 6.25*height - 5*age - 161;
+  }
+  const tdee = Math.round(bmr * selectedActivity);
+
+  // 理想體重
+  const idealMin = Math.round(18.5 * hm * hm * 10) / 10;
+  const idealMax = Math.round(24.9 * hm * hm * 10) / 10;
+
+  // 蛋白質 (1.2g ~ 1.6g per kg)
+  const proteinMin = Math.round(weight * 1.2);
+  const proteinMax = Math.round(weight * 1.6);
+
+  // 飲水量 (30-35ml per kg)
+  const waterMin = Math.round(weight * 30 / 100) / 10;
+  const waterMax = Math.round(weight * 35 / 100) / 10;
+
+  // render
+  const bmiEl = document.getElementById('bmi-box');
+  bmiEl.style.background = bmiColor + '30';
+  bmiEl.style.color = bmiColor;
+  document.getElementById('bmi-val').textContent = bmi.toFixed(1);
+  document.getElementById('bmi-label').textContent = bmiLabel;
+  document.getElementById('bmi-desc').textContent = bmiDesc;
+  document.getElementById('bmi-marker').style.left = bmiPos + '%';
+
+  document.getElementById('cal-maintain').textContent = tdee + ' 大卡';
+  document.getElementById('cal-lose').textContent = (tdee - 500) + ' 大卡';
+  document.getElementById('cal-gain').textContent = (tdee + 500) + ' 大卡';
+
+  // 依 BMI 決定顯示哪些卡片
+  const loseCard = document.getElementById('cal-lose-card');
+  const gainCard = document.getElementById('cal-gain-card');
+  if(bmi < 18.5) {
+    // 過輕：只顯示維持 + 增重
+    loseCard.style.display = 'none';
+    gainCard.style.display = '';
+    document.getElementById('cal-grid').style.gridTemplateColumns = 'repeat(2,1fr)';
+  } else if(bmi >= 24) {
+    // 過重/肥胖：只顯示維持 + 減重
+    loseCard.style.display = '';
+    gainCard.style.display = 'none';
+    document.getElementById('cal-grid').style.gridTemplateColumns = 'repeat(2,1fr)';
+  } else {
+    // 正常：三個都顯示
+    loseCard.style.display = '';
+    gainCard.style.display = '';
+    document.getElementById('cal-grid').style.gridTemplateColumns = 'repeat(3,1fr)';
+  }
+
+  document.getElementById('ideal-weight').textContent = idealMin + ' ~ ' + idealMax + ' kg';
+  document.getElementById('protein-val').textContent  = proteinMin + ' ~ ' + proteinMax + ' g';
+  document.getElementById('water-val').textContent    = waterMin + ' ~ ' + waterMax + ' L';
+
+  // tip
+  const tips = {
+    '體重過輕': `你的每日建議攝取熱量為 ${tdee} 大卡。建議多攝取富含蛋白質和健康脂肪的食物，如雞蛋、堅果、酪梨，並配合適度的重訓來增加肌肉量。`,
+    '體重正常 ✅': `你的每日建議攝取熱量為 ${tdee} 大卡。維持現有的飲食習慣，保持均衡的六大類食物攝取，並規律運動，就能繼續維持健康體態！`,
+    '體重過重': `你的每日建議攝取熱量為 ${tdee} 大卡。若想減重，可將每日熱量控制在 ${tdee-500} 大卡，約每週可減少 0.5 公斤。建議減少精緻糖和油炸食物的攝取。`,
+    '肥胖': `你的每日建議攝取熱量為 ${tdee} 大卡。建議以 ${tdee-500} 大卡為目標，搭配規律有氧運動。最好諮詢專業醫師或營養師，制定安全有效的減重計畫。`,
+  };
+  document.getElementById('health-tip').textContent = tips[bmiLabel] || tips['體重正常 ✅'];
+
+  const result = document.getElementById('health-result');
+  result.style.display = 'block';
+  result.scrollIntoView({behavior:'smooth', block:'start'});
+  // 儲存體重供飲水計算用
+  localStorage.setItem(`si_health_${currentEmail}`, JSON.stringify({weight}));
 }
 
 // ── Gemini API Key ──
@@ -823,12 +1283,12 @@ function capturePhoto(){
 // ── Error ──
 const ERROR_TYPES={
   no_key:   {icon:'🔑',title:'尚未設定 API Key',    msg:'請先輸入 Gemini API Key 才能使用 AI 分析功能。',        tips:['點擊上方的金鑰輸入框','前往 aistudio.google.com 免費申請','貼上 Key 後點「儲存」']},
-  not_ingredient:{icon:'🤔',title:'這不像是配料表耶⋯',msg:'小偵探找不到食品配料表內容，請確認上傳的是配料表照片！',tips:['確認照片有「配料」或「成分」字樣','拍攝食品包裝背面的成分標示','避免上傳食物本身的照片']},
-  blur:     {icon:'😵',title:'圖片太模糊了！',        msg:'小偵探看不清楚文字，請重新拍攝更清晰的照片。',            tips:['靠近一點讓文字更大','保持手機穩定','在自然光下拍攝','確保鏡頭乾淨']},
+  not_ingredient:{icon:'🤔',title:'這不像是配料表耶⋯',msg:'健康小偵探找不到食品配料表內容，請確認上傳的是配料表照片！',tips:['確認照片有「配料」或「成分」字樣','拍攝食品包裝背面的成分標示','避免上傳食物本身的照片']},
+  blur:     {icon:'😵',title:'圖片太模糊了！',        msg:'健康小偵探看不清楚文字，請重新拍攝更清晰的照片。',            tips:['靠近一點讓文字更大','保持手機穩定','在自然光下拍攝','確保鏡頭乾淨']},
   network:  {icon:'📡',title:'網路連線出問題了',      msg:'無法連上伺服器，請檢查網路連線後再試。',                  tips:['確認網路已連線','重新整理頁面後再試','稍後再試']},
   api_key_invalid:{icon:'🚫',title:'API Key 無效',   msg:'Gemini API Key 不正確或已過期，請重新設定。',            tips:['確認複製完整的 Key','到 aistudio.google.com 確認 Key 是否有效','點「更換 Key」重新輸入']},
   parse:    {icon:'🧩',title:'分析結果解讀失敗',      msg:'AI 回傳了奇怪的格式，請重試一次通常就能成功！',            tips:['直接點「重新試試」','若持續失敗請重新上傳照片']},
-  unknown:  {icon:'😿',title:'發生了未知的錯誤',      msg:'小偵探也不知道哪裡出了問題⋯請再試一次吧！',              tips:['重新上傳照片再試','重新整理頁面']},
+  unknown:  {icon:'😿',title:'發生了未知的錯誤',      msg:'健康小偵探也不知道哪裡出了問題⋯請再試一次吧！',              tips:['重新上傳照片再試','重新整理頁面']},
 };
 function showError(type,customMsg){
   const e=ERROR_TYPES[type]||ERROR_TYPES.unknown;
@@ -856,7 +1316,7 @@ async function startAnalysis(){
   const fill=document.getElementById('progress-fill');
   fill.style.animation='none'; fill.offsetHeight; fill.style.animation='';
 
-  const msgs=['小偵探正在辨識配料表文字⋯','查詢成分資料庫中⋯','評估每個成分的安全性⋯','整理分析報告⋯'];
+  const msgs=['健康小偵探正在辨識配料表文字⋯','查詢成分資料庫中⋯','評估每個成分的安全性⋯','整理分析報告⋯'];
   let mi=0;
   const lt=document.getElementById('loading-text');
   const timer=setInterval(()=>{mi=(mi+1)%msgs.length; lt.textContent=msgs[mi];},1800);
@@ -867,7 +1327,12 @@ async function startAnalysis(){
     document.getElementById('btn-analyze').disabled=false;
   };
 
-  const prompt=`你是一位專業的食品安全分析師，熟悉台灣、歐盟、美國 FDA 的食品添加物法規。
+  const userAllergens = getAllergens();
+  const allergenNote = userAllergens.length > 0
+    ? `\n使用者對以下成分過敏：${userAllergens.join('、')}。請在相關成分的 desc 欄位結尾加上「⚠️ 含過敏原」提示，並將該成分的 type 設為 danger。`
+    : '';
+
+  const prompt=`你是一位專業的食品安全分析師，熟悉台灣、歐盟、美國 FDA 的食品添加物法規。${allergenNote}
 請仔細辨識並分析這張圖片中的食品配料表，以繁體中文回覆。
 
 只回傳以下 JSON 格式，不要有任何其他文字或 markdown：
