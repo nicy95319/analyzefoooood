@@ -1017,6 +1017,7 @@ function enterApp(email,name){
   currentEmail=email;
   document.getElementById('nav-username').textContent=name;
   document.getElementById('welcome-msg').textContent=`嗨嗨 ${name}！準備好偵查今天的食物了嗎？ 🕵️`;
+  switchAppTab('analyze');
   renderHistory();
   initApiKeyUI();
   renderAvatar();
