@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🥦 健康小偵探 — 食品分析與健康管理</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -1627,9 +1628,11 @@ async function callAI(apiKey, imageBase64, imageType, prompt){
         ]}], generationConfig:{temperature:0.2,maxOutputTokens:8192} }) }
     );
     let res = await callOnce();
-    // 503 自動重試一次
-    if(res.status === 503){
-      await new Promise(r=>setTimeout(r,5000));
+    // 503 最多重試 3 次
+    let retries = 0;
+    while(res.status === 503 && retries < 3){
+      retries++;
+      await new Promise(r=>setTimeout(r, 5000 * retries));
       res = await callOnce();
     }
     return res;
