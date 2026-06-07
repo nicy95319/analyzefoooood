@@ -147,7 +147,6 @@
     .health-form-grid{grid-template-columns:1fr}
     .health-cal-grid{grid-template-columns:repeat(3,1fr)}
     .health-extra-grid{grid-template-columns:repeat(3,1fr)}
-    .nav-tabs{display:none}
     .nav-tab{font-size:0.8rem;padding:0.4rem 0.6rem}
   }
   /* ── 趣味功能 ── */
@@ -1628,11 +1627,16 @@ async function callAI(apiKey, imageBase64, imageType, prompt){
         ]}], generationConfig:{temperature:0.2,maxOutputTokens:8192} }) }
     );
     let res = await callOnce();
-    // 503 最多重試 3 次
+    // 503/429 最多重試 3 次
     let retries = 0;
-    while(res.status === 503 && retries < 3){
+    while((res.status === 503 || res.status === 429) && retries < 3){
       retries++;
-      await new Promise(r=>setTimeout(r, 5000 * retries));
+      const waitSec = res.status === 429 ? 15 * retries : 5 * retries;
+      const msg = res.status === 429
+        ? `請求太頻繁，等待 ${waitSec} 秒後自動重試（第 ${retries} 次）⋯`
+        : `伺服器忙碌，等待 ${waitSec} 秒後自動重試（第 ${retries} 次）⋯`;
+      document.getElementById('loading-text').textContent = msg;
+      await new Promise(r=>setTimeout(r, waitSec * 1000));
       res = await callOnce();
     }
     return res;
